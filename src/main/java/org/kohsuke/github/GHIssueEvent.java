@@ -1,5 +1,7 @@
 package org.kohsuke.github;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.Date;
 
 /**
@@ -9,48 +11,22 @@ import java.util.Date;
  *
  * @author Martin van Zijl
  */
-public class GHIssueEvent {
+public class GHIssueEvent extends GHObject {
     private GitHub root;
 
-    private long id;
-    private String node_id;
-    private String url;
     private GHUser actor;
     private String event;
     private String commit_id;
     private String commit_url;
-    private String created_at;
     private GHMilestone milestone;
     private GHLabel label;
     private GHUser assignee;
 
     private GHIssue issue;
 
-    /**
-     * Gets id.
-     *
-     * @return the id
-     */
-    public long getId() {
-        return id;
-    }
-
-    /**
-     * Gets node id.
-     *
-     * @return the node id
-     */
-    public String getNodeId() {
-        return node_id;
-    }
-
-    /**
-     * Gets url.
-     *
-     * @return the url
-     */
-    public String getUrl() {
-        return url;
+    @Override
+    public URL getHtmlUrl() throws IOException {
+        throw new IllegalArgumentException("Issue event don't have HTML URL");
     }
 
     /**
@@ -87,15 +63,6 @@ public class GHIssueEvent {
      */
     public String getCommitUrl() {
         return commit_url;
-    }
-
-    /**
-     * Gets created at.
-     *
-     * @return the created at
-     */
-    public Date getCreatedAt() {
-        return GitHubClient.parseDate(created_at);
     }
 
     /**
@@ -159,10 +126,16 @@ public class GHIssueEvent {
 
     @Override
     public String toString() {
+        final Date createdAt;
+        try {
+            createdAt = getCreatedAt();
+        } catch (IOException ignore) {
+            throw new IllegalArgumentException("Cannot parse create_at date");
+        }
         return String.format("Issue %d was %s by %s on %s",
                 getIssue().getNumber(),
                 getEvent(),
                 getActor().getLogin(),
-                getCreatedAt().toString());
+                createdAt.toString());
     }
 }
